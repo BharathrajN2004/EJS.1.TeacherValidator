@@ -1,0 +1,124 @@
+<%- include('header')%>
+
+    <body>
+        
+        <br>
+        <div class="container mt-5">
+
+            <h2 class="mb-4">Full List</h2>
+            <br>
+            <div class="form-group">
+                <button onclick="downloadPdf()" class="btn">Download PDF</button>
+                <button onclick="downloadExcel()" class="btn">Download Excel</button>
+            </div>
+            <table class="table" id="myTable">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Permission</th>
+                        <th>Cost Leave</th>
+                        <th>No. of ODs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% persons.forEach(function(person) { %>
+                        <tr <% if (person.permissions> 5 || person.cost_leave > 3 || person.no_of_ods > 15) { %>
+                            class="table-danger" <% } %>>
+                                <td>
+                                    <%= person.date %>
+                                </td>
+                                <td>
+                                    <%= person.collageid %>
+                                </td>
+                                <td>
+                                    <%= person.name %>
+                                </td>
+
+                                <td>
+                                    <%= person.permissions %>
+                                </td>
+                                <td>
+                                    <%= person.cost_leave %>
+                                </td>
+                                <td>
+                                    <%= person.no_of_ods %>
+                                </td>
+                        </tr>
+                        <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/vfs_fonts.js"></script>
+        <script>
+            function downloadPdf() {
+                // Get the table element
+                const table = document.getElementById('myTable');
+
+                // Convert the table to an array of rows and cells
+                const rows = table.querySelectorAll('tr');
+                const tableData = Array.from(rows, (row) => {
+                    const cells = row.querySelectorAll('td, th');
+                    return Array.from(cells, (cell) => cell.innerText.trim());
+                });
+                console.log(tableData);
+                // Create the PDF document using pdfmake
+                const docDefinition = {
+                    content: [
+                        { text: 'Staff Detail', style: 'header' },
+                        {
+                            table: {
+                                body: [
+                                    ...tableData
+                                ]
+                            }
+                        }
+                    ],
+                    styles: {
+                        header: {
+                            fontSize: 18,
+                            bold: true,
+                            margin: [0, 0, 0, 10]
+                        }
+                    }
+                };
+                const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+
+                // Download the PDF file
+                pdfDocGenerator.download('table.pdf');
+            }
+
+            function downloadExcel() {
+                // Get the table element
+                const table = document.getElementById('myTable');
+
+                // Convert the table to a CSV file
+                const csv = [];
+                const rows = table.querySelectorAll('tr');
+                for (const row of rows) {
+                    const cells = row.querySelectorAll('td, th');
+                    const csvRow = [];
+                    for (const cell of cells) {
+                        csvRow.push(cell.innerText);
+                    }
+                    csv.push(csvRow.join(','));
+                }
+                const csvData = csv.join('\n');
+
+                // Create a temporary download link and trigger a click on it
+                const downloadLink = document.createElement('a');
+                downloadLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData);
+                downloadLink.download = 'table.csv';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            }
+        </script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    </body>
+
+    </html>

@@ -1,0 +1,258 @@
+<%- include('header')%>
+
+    <body>
+        <br>
+        <div class="container mt-5">
+            <h1>Search Data</h1>
+            <form id="form">
+                <div class="form-group">
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" name="startDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" name="endDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="collageid">CollegeID:</label>
+                    <input type="text" id="collageid" name="collageid" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" class="form-control">
+                </div>
+                <!-- 
+                <div class="form-group">
+                    <label for="minPermission">Minimum Permissions:</label>
+                    <input type="number" id="minPermission" name="minPermission" class="form-control" min="0" max="6">
+                </div>
+                <div class="form-group">
+                    <label for="maxPermission">Maximum Permissions:</label>
+                    <input type="number" id="maxPermission" name="maxPermission" class="form-control" min="0" max="6">
+                </div>
+                <div class="form-group">
+                    <label for="minCost_leave">Minimum CLC:</label>
+                    <input type="number" id="minCost_leave" name="minCost_leave" class="form-control" min="0" max="3">
+                </div>
+                <div class="form-group">
+                    <label for="maxCost_leave">Maximum CLC:</label>
+                    <input type="number" id="maxCost_leave" name="maxCost_leave" class="form-control" min="0" max="3">
+                </div>
+                <div class="form-group ">
+                    <label for="minNo_of_ods">Minimum ODS:</label>
+                    <input type="number" id="minNo_of_ods" name="minNo_of_ods" class="form-control" min="0" max="15">
+                </div>
+                <div class="form-group">
+                    <label for="maxNo_of_ods">Maximum ODS:</label>
+                    <input type="number" id="maxNo_of_ods" name="maxNo_of_ods" class="form-control" min="0" max="15">
+                </div> -->
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+            <br>
+            <div class="form-group">
+                <button onclick="downloadPdf()" class="btn">Download PDF</button>
+                <button onclick="downloadExcel()" class="btn">Download Excel</button>
+            </div>
+
+            <table class="table mt-3" id="myTable">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>CollageID</th>
+                        <th>Name</th>
+                        <th>Permissions</th>
+                        <th>CLC</th>
+                        <th>OD's</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <% for (const person of persons) { %>
+                        <tr <% if (person.permissions> 5 || person.cost_leave > 3 || person.no_of_ods > 15) { %>
+                            class="table-danger" <% } %>>
+                                <td>
+                                    <%= person.date %>
+                                </td>
+                                <td>
+                                    <%= person.collageid %>
+                                </td>
+                                <td>
+                                    <%= person.name %>
+                                </td>
+                                <td>
+                                    <%= person.permissions %>
+                                </td>
+                                <td>
+                                    <%= person.cost_leave %>
+                                </td>
+                                <td>
+                                    <%= person.no_of_ods %>
+                                </td>
+                        </tr>
+                        <% } %>
+
+                </tbody>
+            </table>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/vfs_fonts.js"></script>
+        <script>
+            function downloadPdf() {
+                // Get the table element
+                const table = document.getElementById('myTable');
+
+                // Convert the table to an array of rows and cells
+                const rows = table.querySelectorAll('tr');
+                const tableData = Array.from(rows, (row) => {
+                    const cells = row.querySelectorAll('td, th');
+                    return Array.from(cells, (cell) => cell.innerText.trim());
+                });
+                console.log(tableData);
+                // Create the PDF document using pdfmake
+                const docDefinition = {
+                    content: [
+                        { text: 'Table Data', style: 'header' },
+                        {
+                            table: {
+                                body: [
+
+                                    ...tableData
+                                ]
+                            }
+                        }
+                    ],
+                    styles: {
+                        header: {
+                            fontSize: 18,
+                            bold: true,
+                            margin: [0, 0, 0, 10]
+                        }
+                    }
+                };
+                const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+
+                // Download the PDF file
+                pdfDocGenerator.download('table.pdf');
+            }
+
+            function downloadExcel() {
+                // Get the table element
+                const table = document.getElementById('myTable');
+
+                // Convert the table to a CSV file
+                const csv = [];
+                const rows = table.querySelectorAll('tr');
+                for (const row of rows) {
+                    const cells = row.querySelectorAll('td, th');
+                    const csvRow = [];
+                    for (const cell of cells) {
+                        csvRow.push(cell.innerText);
+                    }
+                    csv.push(csvRow.join(','));
+                }
+                const csvData = csv.join('\n');
+
+                // Create a temporary download link and trigger a click on it
+                const downloadLink = document.createElement('a');
+                downloadLink.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvData);
+                downloadLink.download = 'table.csv';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            }
+        </script>
+        <script>
+            // const { ObjectId } = require('mongodb');
+            const form = document.getElementById("form");
+            const tableBody = document.getElementById("table-body");
+            const personsInput = document.getElementById("persons");
+
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+
+                const startDate = form.elements.startDate.value;
+                const endDate = form.elements.endDate.value;
+                const name = form.elements.name.value;
+                const collageid = form.elements.collageid.value;
+                // const minPermission = form.elements.minPermission.value;
+                // const maxPermission = form.elements.maxPermission.value;
+                // const minCost_leave = form.elements.minCost_leave.value;
+                // const maxCost_leave = form.elements.maxCost_leave.value;
+                // const minNo_of_ods = form.elements.minNo_of_ods.value;
+                // const maxNo_of_ods = form.elements.maxNo_of_ods.value;
+
+                let filteredPersons = <%- JSON.stringify(persons) %>;
+                console.log(filteredPersons);
+
+                if (startDate) {
+                    console.log(startDate);
+                    filteredPersons = filteredPersons.filter(person => person.date >= startDate);
+                }
+
+                if (endDate) {
+                    filteredPersons = filteredPersons.filter(person => person.date <= endDate);
+
+                }
+
+                if (name) {
+                    filteredPersons = filteredPersons.filter(person => person.name.toLowerCase().includes(name.toLowerCase()));
+                    console.log('done da naka');
+                }
+                if (collageid) {
+                    filteredPersons = filteredPersons.filter(person => person.collageid.toLowerCase() == collageid.toLowerCase());
+                    console.log(filteredPersons);
+                }
+
+                // if (minPermission) {
+                //     filteredPersons = filteredPersons.filter(person => person.permissions >= minPermission);
+                // }
+
+                // if (maxPermission) {
+                //     filteredPersons = filteredPersons.filter(person => person.permissions <= maxPermission);
+                // }
+
+                // if (minCost_leave) {
+                //     filteredPersons = filteredPersons.filter(person => person.cost_leave >= minCost_leave);
+                // }
+
+                // if (maxCost_leave) {
+                //     filteredPersons = filteredPersons.filter(person => person.cost_leave <= maxCost_leave);
+                // }
+
+                // if (minNo_of_ods) {
+                //     filteredPersons = filteredPersons.filter(person => person.no_of_ods >= minNo_of_ods);
+                // }
+
+                // if (maxNo_of_ods) {
+                //     filteredPersons = filteredPersons.filter(person => person.no_of_ods <= maxNo_of_ods);
+                // }
+
+                tableBody.innerHTML = "";
+
+                if (filteredPersons.length > 0) {
+                    filteredPersons.forEach(person => {
+                        console.log(person);
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${person.date}</td>
+                            <td>${person.collageid}</td>
+                            <td>${person.name}</td>
+                            <td>${person.permissions}</td>
+                            <td>${person.cost_leave}</td>
+                            <td>${person.no_of_ods}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                } else {
+                    const row = document.createElement("tr");
+                    row.innerHTML = "<td colspan='7'>No results found</td>";
+                    tableBody.appendChild(row);
+                }
+            });
+
+        </script>
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    </body>
+
+    </html>

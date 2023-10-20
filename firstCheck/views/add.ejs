@@ -1,0 +1,196 @@
+<%- include('header')%>
+
+    <body>
+        <div class="con">
+            <img src="/image/hom2.png" class="imgadd">
+        </div>
+        <div class="spacer"></div>
+        <div class="container">
+            <form id="myForm" method="POST" action="/show">
+                <label for="datepicker">Select a date:</label>
+                <input type="date" id="datepicker" name="date">
+                <div class="row align-items-center">
+                    <div class="form-group col ">
+                        <label for="id">COLLEGE ID:</label>
+                        <input type="text" class="form-control" id="id" name="collegeid" required>
+                    </div>
+                    <div class="form-group col">
+                        <label for="name">Name:</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                </div>
+                <div class="card text-center">
+                    <div class="card-header" id="header">
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-title" id="remaining"></h6>
+                        <p class="card-text" id="leftover"></p>
+                        <% if(access=='hod' ){%>
+                            <button class="btn btn-primary" disabled>view only</button>
+                            <%}else{%>
+                                <button class="btn btn-primary" id="permcheck" disabled>view only</button>
+                                <%}%>
+                    </div>
+                </div>
+                <input type="text" class="none" name="permissions" id="perm">
+                <input type="text" class="none" name="cost_leave" id="leave">
+                <input type="text" class="none" name="no_of_ods" id="od">
+            </form>
+        </div>
+
+        <!-- Include jQuery -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+
+        <script>
+            var today = new Date();
+            var datepicker = document.getElementById('datepicker');
+            const nameInput = document.getElementById('name');
+            const idInput = document.getElementById('id');
+            const header = document.getElementById('header');
+            const remaining = document.getElementById('remaining');
+            const leftover = document.getElementById("leftover");
+            const permcheck = document.getElementById('permcheck');
+            const button = document.getElementById('button');
+            const perm = document.getElementById('perm');
+            const leave = document.getElementById('leave');
+            const od = document.getElementById('od');
+
+            perm.value = 0;
+            leave.value = 0;
+            od.value = 0;
+            // Set the input value to the current date
+            datepicker.value = today.toISOString().substr(0, 10);
+
+            var todo = '<%- data %>';
+
+            if (todo === "od") {
+                header.textContent = "On Duty";
+                remaining.textContent = "Remaining OD";
+            }
+            else if (todo === "permission") {
+                header.textContent = "Permissions";
+                remaining.textContent = "Remaining permission";
+            }
+            else {
+                header.textContent = "Leave";
+                remaining.textContent = "Remaining Leave";
+            }
+            var personsData = '';
+            if ('<%- JSON.stringify(persons) %>' != '') {
+                personsData = <%- JSON.stringify(persons) %>;
+            }
+
+            function findPersonData(id) {
+                var name = '';
+                var permis = 0;
+                var costLeave = 0;
+                var ods = 0;
+                // Loop through the personsData array
+                for (var i = 0; i < personsData.length; i++) {
+
+                    // Check if the id matches
+                    if (personsData[i].collegeid === id) {
+                        // Return the person data
+                        name = personsData[i].name;
+                        console.log(name);
+                        permis += personsData[i].permissions;
+                        costLeave += personsData[i].cost_leave;
+                        ods += personsData[i].no_of_ods;
+                        console.log(personsData[i].permissions);
+                    }
+                }
+                if (name === '') {
+                    // If the id is not found, return null
+                    return null;
+                }
+                return {
+                    'name': name,
+                    'permissions': permis,
+                    'cost_leave': costLeave,
+                    'no_of_ods': ods
+                };
+            }
+
+            idInput.addEventListener('input', () => {
+
+                const person = findPersonData(idInput.value);
+                console.log(person);
+
+                if (person) {
+                    // Populate the form fields with the person's data
+                    nameInput.value = person.name;
+                    permcheck.classList.remove("none");
+
+                    if (todo == "od") {
+                        leftover.textContent = "Only " + (15 - person.no_of_ods).toString()
+                            + " ODs available";
+                        if (15 - person.no_of_ods > 0) {
+                            od.value = 1;
+                            permcheck.textContent = "Validate OD";
+                            permcheck.disabled = false;
+                            permcheck.style.backgroundColor = "blue";
+                        } else {
+                            od.value = 0;
+                            permcheck.textContent = "OD limit exceded";
+                            permcheck.style.backgroundColor = "red";
+                        }
+
+                    } else if (todo == "permission") {
+                        console.log(person.permissions);
+                        leftover.textContent = "Only " + (3 - person.permissions).toString()
+                            + " permissions available";
+                        if (3 - person.permissions > 0) {
+                            perm.value = 1;
+                            permcheck.disabled = false;
+                            permcheck.style.backgroundColor = "blue";
+                            permcheck.textContent = "Permission limit exceded";
+                        } else {
+                            perm.value = 0;
+                            permcheck.textContent = "Validate Permission";
+                            permcheck.style.backgroundColor = "red";
+                        }
+                    } else {
+                        console.log(person.cost_leave);
+                        leftover.textContent = "Only " + (6 - person.cost_leave).toString()
+                            + " leaves available";
+                        if (6 - person.cost_leave > 0) {
+                            leave.value = 1;
+                            permcheck.style.backgroundColor = "blue";
+                            permcheck.disabled = false;
+                            permcheck.textContent = "Validate leave";
+                        } else {
+                            leave.value = 0;
+                            permcheck.textContent = "Leave count exceded";
+                            permcheck.style.backgroundColor = "red";
+                        }
+                    }
+                }
+                else {
+                    // Populate the form fields with the person's data
+                    nameInput.value = "";
+                    // idInput.value="";
+                    leftover.textContent = "";
+                    permcheck.textContent = "validate";
+                    permcheck.disabled = true;
+                    if (todo === "od") {
+                        header.textContent = "On Duty";
+                        remaining.textContent = "Remaining OD";
+                    } else if (todo === "permission") {
+                        header.textContent = "Permissions";
+                        remaining.textContent = "Remaining permission";
+                    } else {
+                        header.textContent = "Leave";
+                        remaining.textContent = "Remaining Leave";
+                    }
+                };
+            });
+        </script>
+
+        <!-- Load jQuery -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <!-- Load Bootstrap JS -->
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    </body>
+
+    </html>

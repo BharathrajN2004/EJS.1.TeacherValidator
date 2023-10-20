@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Teacher Validator</title>
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            position: relative;
+            margin: 0;
+            font-family: sans-serif;
+            background: linear-gradient(to bottom right, #dcf0ff, #afbcff);
+        }
+
+        * {
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        *:after,
+        *:before {
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .main {
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        /* Style for central container */
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Style for buttons */
+        .button {
+            width: 200px;
+            height: 50px;
+            margin: 10px;
+            border-radius: 50px;
+            box-shadow: 4px 4px 10px #c9c9c9, -4px -4px 10px #ffffff;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Hover style for buttons */
+        .button:hover {
+            transform: translate(5px, -5px);
+            box-shadow: 5px 5px 10px #c9c9c9, -5px -5px 10px #ffffff;
+            background: linear-gradient(to bottom right, rgb(235, 255, 248), rgb(112, 255, 207));
+            transform: scale(1.1);
+        }
+
+        /* Style for button container */
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .con {
+            z-index: -2;
+            margin-top: 50px;
+        }
+
+        .img-fluid {
+            z-index: -1;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+
+        .imgright-fluid {
+            z-index: -1;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .none {
+            display: none;
+        }
+
+        button {
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <div class="button-container">
+            <a href="/show">
+                <div class="button"> VIEW</div>
+            </a>
+            <a href="/query">
+                <div class="button"> QUERY</div>
+            </a>
+            <form action="/add" method="get"> 
+                <input type="text" name="access" value='<%= user.access%>' 
+                    class="none">
+                <input type="text" name="todo" value="od"  class="none">
+                <button type="submit" class="button">ON DUTY</button>
+            </form>
+            <form action="/add" method="get">
+                 <input type="text" name="access" value='<%= user.access%>' 
+                    class="none">
+                <input type="text" name="todo" value="permission"  class="none">
+                <button type="submit" class="button">PERMISSION</button>
+            </form>
+            <form action="/add" method="get">
+                <input type="text" name="access" value='<%= user.access%>'  class="none">
+                <input type="text" name="todo" value="leave"  class="none">
+                <button type="submit" class="button">LEAVE</button>
+            </form>
+        </div>
+    </div>
+    <div class="con">
+        <div class="row">
+            <div class="col-md-12">
+                <img src="/image/homeimg.png" class="img-fluid" alt="Asset Image" height="60%">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <img src="/image/hom3.png" class="imgright-fluid" alt="Asset Image" height="100%">
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
